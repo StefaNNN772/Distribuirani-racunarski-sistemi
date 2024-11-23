@@ -1,0 +1,10 @@
+flask
+flask-sqlalchemy
+flask-bcrypt
+python-dotenv
+psycopg2-binary
+uuid
+flask-cors
+Flask-JWT-Extended
+flask_mail
+Werkzeug

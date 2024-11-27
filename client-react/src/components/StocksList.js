@@ -2,45 +2,82 @@ import classes from './StocksList.module.css';
 import img1 from '../pictures/btc.png';
 import img2 from '../pictures/images.png';
 import NavBar from './NavBar';
+import { useEffect,useState } from 'react';
+import {Sparklines,SparklinesLine} from 'react-sparklines';
 
-const stocks = [
-    { name: 'Apple', price: 145.60,img:img1 },
-    { name: 'Tesla', price: 273.50,img:img2 },
-    { name: 'Amazon', price: 3335.30,img:img1 },
-    { name: 'Microsoft', price: 299.80,img:img2 },
-    { name: 'Google', price: 2793.50,img:img1 },
-    { name: 'Meta', price: 343.60,img:img2 },
-    { name: 'Netflix', price: 648.90,img:img1 },
-    { name: 'Nvidia', price: 202.15 ,img:img2},
-    { name: 'Intel', price: 56.72,img:img1 },
-    { name: 'AMD', price: 122.44 ,img:img2},
-  ];
+
 
 export default function StocksList(){
+
+    const[cryptoData,setCryptoData]=useState([]);
+    //const [loading, setLoading] = useState(true);
+
+    
+    useEffect(()=>{
+        async function fetchCryptoData(){
+            try{
+                const response=await fetch(
+                    "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=true"
+                );
+                if(!response.ok){
+                    throw new Error("greska pri dohvatanju");
+                }
+                const data=await response.json();
+                setCryptoData(data);
+                //setLoading(false);
+
+            }
+            catch(error){
+                console.error("greska",error);
+            }
+           
+            
+        }
+        fetchCryptoData();
+    },[])
+
+    //if (loading) return <p>Loading...</p>;
+
     return(
         <>
             
-            <table id="result">
-            <thead>
-                <tr>
-                    <td>Logo</td>
-                    <td>Name</td>
-                    <td>Price</td>
-                </tr>
-            </thead>
-            <tbody>
-                {stocks.map((stock)=>(
-                    <tr>
-                       <td><img 
-                       src={stock.img}
-                       className='small-img'
-                       /></td>
-                        <td>{stock.name}</td>
-                        <td>{stock.price}</td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
+            <div>
+      <h1>Current prices</h1>
+      <table id="result">
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Price (USD)</th>
+            <th>Change (24h)</th>
+            <th>Price Trend</th>
+          </tr>
+        </thead>
+        <tbody>
+          {cryptoData.map((crypto) => (
+            <tr key={crypto.id}>
+                <td>
+                    <img src={crypto.image} className="small-img"/>
+                </td>
+              <td>{crypto.name}</td>
+              <td>${crypto.current_price.toFixed(2)}</td>
+              <td
+                style={{
+                  color: crypto.price_change_percentage_24h > 0 ? "green" : "red",
+                }}
+              >
+                {crypto.price_change_percentage_24h.toFixed(2)}%
+              </td>
+              <td>
+                <Sparklines data={crypto.sparkline_in_7d.price}>
+                    <SparklinesLine color={crypto.price_change_percentage_24h > 0 ? "green" : "red"}/>
+                </Sparklines>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
         </>
         
     );

@@ -1,11 +1,13 @@
 import { Link } from "react-router-dom";
 import Header from "./Header";
-export default function Signup() {
+export default function Signup({title}) {
     return (
       <>
+
         <Header/>
-        <form className="control">
         
+        <form className="control">
+        <h1>{title}</h1>
         <div className="control">
           <label htmlFor="email">Email</label>
           <input id="email" type="email" name="email" required />

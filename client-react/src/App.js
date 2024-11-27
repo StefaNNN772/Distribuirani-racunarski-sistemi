@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import StocksPage from "./pages/StocksPage";
 import NavBarRoot from "./pages/NavBarRoot";
+import EditUserPage from "./pages/EditUserPage";
 
 const router=createBrowserRouter([
   
@@ -14,7 +15,7 @@ const router=createBrowserRouter([
   {path: '/home',element:<NavBarRoot/>,
     children:[
       {path:'',element:<StocksPage/>},
-      {path:'edit',element:<SignUpPage/>}
+      {path:'edit',element:<EditUserPage/>}
     ]
   }
   

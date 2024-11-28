@@ -4,5 +4,6 @@ from datetime import timedelta
 class ApplicationConfig:   
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = True
-    SQLALCHEMY_DATABASE_URI = environ.get('DB_URL')
+    SQLALCHEMY_DATABASE_URI = environ.get('DATABASE_URL')
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=15)
+    JWT_SECRET_KEY = "slbodvmvs"

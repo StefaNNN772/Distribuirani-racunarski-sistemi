@@ -1,10 +1,13 @@
 import Header from "./Header";
 import { Link } from "react-router-dom";
+import { Form } from "react-router-dom";
 export default function Login() {
+
+  
     return (
       <>
       <Header/>
-      <form>
+      <Form method = 'POST'>
         <h1>Login</h1>
   
         <div className="control-row">
@@ -23,10 +26,10 @@ export default function Login() {
           <Link className="button button-flat" to='/signup'>Sign up</Link>
           <button className="button">Login</button>
         </p>
-      </form>
+      </Form>
    </>     
       
       
-        
-    );
-  }
+        
+    );
+  }

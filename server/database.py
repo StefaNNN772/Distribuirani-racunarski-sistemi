@@ -15,6 +15,10 @@ class User(db.Model):
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
+    address = db.Column(db.String(100), nullable=False)
+    city = db.Column(db.String(100), nullable=False)
+    country = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.Integer, nullable=False)
     password = db.Column(db.String(255), nullable=False)
 
 class Stock(db.Model):
@@ -30,9 +34,13 @@ class Stock(db.Model):
 # def add_users():
 #     users = [
 #         User(
-#             first_name='Stefan', 
-#             last_name='Lazarevic', 
-#             email='slazarevic772@gmail.com', 
+#             first_name='Stefan',
+#             last_name='Lazarevic',
+#             email='slazarevic772@gmail.com',
+#             address='Aleksandra Tisme 8',
+#             city='Novi Sad',
+#             country='Serbia',
+#             phone='065',
 #             password='Stefan'
 #         ),
 #     ]
@@ -49,4 +57,4 @@ def init_db(app):
         db.init_app(app)
     with app.app_context():
         db.create_all()
-        #add_users()
+        # add_users()

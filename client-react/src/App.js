@@ -1,5 +1,5 @@
 import Login from "./components/Login";
-import Signup from "./components/SignUp";
+import Signup, {action as manipulateFormAction}from "./components/SignUp";
 import StocksList from "./components/StocksList";
 import { createBrowserRouter,RouterProvider } from "react-router-dom";
 import LoginPage ,{action as loginAction}from "./pages/LoginPage";
@@ -8,15 +8,20 @@ import StocksPage from "./pages/StocksPage";
 import NavBarRoot from "./pages/NavBarRoot";
 import EditUserPage from "./pages/EditUserPage";
 
+
 const router=createBrowserRouter([
   
-  {path:'/login',element:<LoginPage/>,
+  {path:'/',element:<LoginPage/>,
     action:loginAction},
-  {path:'/signup',element:<SignUpPage/>},
+  {path:'/signup',element:<SignUpPage/>,
+    action:manipulateFormAction
+  },
   {path: '/',element:<NavBarRoot/>,
     children:[
-      {path:'/home',element:<StocksPage/>},
-      {path:'edit',element:<EditUserPage/>}
+      {path:'home',element:<StocksPage/>},
+      {path:'edit/:editId',element:<EditUserPage/>,
+        action:manipulateFormAction
+      }
     ]
   }
   

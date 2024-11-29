@@ -22,10 +22,10 @@ export async function action({request}){
     if (!response.ok) {
         const errorData = await response.json();
         console.error('Greška:', errorData.message || 'Neuspela autentifikacija');
-        return redirect("/login");
+        return redirect("/");
     } else {
         console.log('Ulogovan korisnik:', await response.json());
     }
 
-    return redirect("/");
+    return redirect("/home");
 }

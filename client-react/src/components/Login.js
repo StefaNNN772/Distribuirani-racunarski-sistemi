@@ -1,19 +1,22 @@
 import Header from "./Header";
-import { Link } from "react-router-dom";
+import { Link, useActionData } from "react-router-dom";
 import { Form } from "react-router-dom";
 export default function Login() {
-
   
+
+  //const data=useActionData();
     return (
       <>
       <Header/>
       <Form method = 'POST'>
         <h1>Login</h1>
-  
+      
         <div className="control-row">
           <div className="control no-margin">
             <label htmlFor="email">Email</label>
-            <input id="email" type="email" name="email" required />
+            <input id="email" type="email" name="email" required
+            
+            />
           </div>
   
           <div className="control no-margin">

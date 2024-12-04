@@ -1,8 +1,9 @@
-import { Link,Form, redirect } from "react-router-dom";
+import { Link, Form, redirect, useActionData, json } from "react-router-dom";
 
 import Header from "./Header";
 export default function Signup({title,method}) {
 
+  const data = useActionData();
   
     return (
       <>
@@ -76,6 +77,8 @@ export default function Signup({title,method}) {
           
           />
         </div>
+
+        {data?.error && <p style={{ color: "red" }}>{data.error}</p>} {/* Prikaz greške */}
   
         <p className="form-actions">
           <Link to='/' className="button button-flat">Back</Link>
@@ -116,26 +119,27 @@ export default function Signup({title,method}) {
       body: JSON.stringify(signData),
     });
 
-    if (response.status === 422) {
-      const errorData = await response.json();
-      console.error('Greška:', errorData.message || 'Neuspesno popunjeno');
-    }
-
-    if (response.status === 400) {
-      const errorData = await response.json();
-      console.error('Greška:', errorData.message || 'Neuspesno popunjeno');
-      return redirect('/signup')
-    }
-
-    if (response.status === 409) {
-      const errorData = await response.json();
-      console.error('Greška:', errorData.message || 'Konflikt/Postoji korisnik sa tim email-om');
-      return redirect('/signup')
-    }
-
     if(!response.ok){
       const errorData = await response.json();
-      console.error('Greška:', errorData.message || 'Neuspesna forma');
+      return json({ error: errorData.Error || "Form submission failed" }, { status: response.status });
     }
+
+    // if (response.status === 422) {
+    //   const errorData = await response.json();
+    //   console.error('Greška:', errorData.message || 'Neuspesno popunjeno');
+    // }
+
+    // if (response.status === 400) {
+    //   const errorData = await response.json();
+    //   console.error('Greška:', errorData.message || 'Neuspesno popunjeno');
+    //   return redirect('/signup')
+    // }
+
+    // if (response.status === 409) {
+    //   const errorData = await response.json();
+    //   console.error('Greška:', errorData.message || 'Konflikt/Postoji korisnik sa tim email-om');
+    //   return redirect('/signup')
+    // }
+
     return redirect('/');
   }

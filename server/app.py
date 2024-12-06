@@ -10,6 +10,7 @@ from flask_cors import CORS
 from database import init_db, User, Stock, db
 from flask_mail import Mail, Message
 import threading
+import datetime
 
 def get_uuid():
     return uuid4().hex
@@ -53,9 +54,11 @@ def login_user(email, password):
         print(f"Error: {ex}")
         return jsonify({"Error": "Server error"}), 500
     
-    access_token = create_access_token(identity = user.id)
-    return jsonify(access_token = access_token, user = {"id": user.id, "email": user.email, "first_name": user.first_name, "last_name": user.last_name, 
-                                                        "address": user.address, "city": user.city, "country": user.country, "phone": user.phone})
+    access_token = jwt.encode({
+        'id':user.id,
+        'exp':datetime.datetime.utcnow()+datetime.timedelta(min=15)
+    },ApplicationConfig.JWT_SECRET_KEY,algorithm='HS256')
+    return jsonify(access_token=access_token,user={"id":user.id,"email":user.email})
 
 @app.route("/login", methods=["POST"])
 def login_route():

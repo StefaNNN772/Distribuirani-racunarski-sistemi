@@ -6,7 +6,7 @@ import LoginPage ,{action as loginAction}from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import StocksPage from "./pages/StocksPage";
 import NavBarRoot from "./pages/NavBarRoot";
-import EditUserPage from "./pages/EditUserPage";
+import EditUserPage ,{loader as editLoadData}from "./pages/EditUserPage";
 
 
 const router=createBrowserRouter([
@@ -19,7 +19,9 @@ const router=createBrowserRouter([
   {path: '/',element:<NavBarRoot/>,
     children:[
       {path:'home',element:<StocksPage/>},
-      {path:'edit/:editId',element:<EditUserPage/>,
+      {path:'edit',element:<EditUserPage/>,
+        //path:'edit/:editId'
+        loader:editLoadData,
         action:manipulateFormAction
       }
     ]

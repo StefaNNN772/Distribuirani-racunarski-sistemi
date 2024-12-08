@@ -1,7 +1,8 @@
 import { Link, Form, redirect, useActionData, json } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 import Header from "./Header";
-export default function Signup({title,method,userData}) {
+export default function Signup({title,button,method,userData}) {
 
   const data = useActionData();
   
@@ -14,7 +15,7 @@ export default function Signup({title,method,userData}) {
         <h1>{title}</h1>
         <div className="control">
           <label htmlFor="email">Email</label>
-          <input id="email" type="email" name="email" required 
+          <input id="email" type="email" name="email" required defaultValue={userData?.email || ""}
           />
         </div>
   
@@ -30,7 +31,7 @@ export default function Signup({title,method,userData}) {
         <div className="control-row">
           <div className="control">
             <label htmlFor="first_name">First Name</label>
-            <input id="first_name" type="text" name="first_name" required
+            <input id="first_name" type="text" name="first_name" required defaultValue={userData?.first_name || ""}
             
             
             />
@@ -38,7 +39,7 @@ export default function Signup({title,method,userData}) {
   
           <div>
             <label htmlFor="last_name">Last Name</label>
-            <input id="last_name" type="text" name="last_name" required
+            <input id="last_name" type="text" name="last_name" required defaultValue={userData?.last_name || ""}
             
             />
             
@@ -50,7 +51,7 @@ export default function Signup({title,method,userData}) {
         <div className="control-row">
           <div className="control">
             <label htmlFor="address">Address</label>
-            <input id="address" type="text" name="address" required
+            <input id="address" type="text" name="address" required defaultValue={userData?.address || ""}
             
             
             />
@@ -58,7 +59,7 @@ export default function Signup({title,method,userData}) {
   
           <div>
             <label htmlFor="city">City</label>
-            <input id="city" type="text" name="city" required 
+            <input id="city" type="text" name="city" required defaultValue={userData?.city || ""}
             
             />
           </div>
@@ -66,13 +67,13 @@ export default function Signup({title,method,userData}) {
   
         <div className="control">
           <label htmlFor="country">Country</label>
-          <input id="country" type="text" name="country" required 
+          <input id="country" type="text" name="country" required defaultValue={userData?.country || ""}
          
           />
         </div>
         <div className="control">
           <label htmlFor="phone">Phone</label>
-          <input id="phone" type="number" name="phone" required 
+          <input id="phone" type="number" name="phone" required defaultValue={userData?.phone || ""}
           
           />
         </div>
@@ -81,7 +82,7 @@ export default function Signup({title,method,userData}) {
   
         <p className="form-actions">
           <Link to='/' className="button button-flat">Back</Link>
-          <button className="button">Sign up</button>
+          <button className="button">{button}</button>
         </p>
       </Form>
       </>
@@ -108,7 +109,15 @@ export default function Signup({title,method,userData}) {
     let url='http://localhost:5000/signup';
     if(method==='PATCH'){
       const id=params.editId;
-      url='http://localhost:5000/edit/'+id;
+      const token = localStorage.getItem("token");
+      const decodedToken = token ? jwtDecode(token) : null;
+
+    if (!decodedToken) {
+      throw new Error("No valid token found.");
+    }
+  
+    const userId = decodedToken?.id;
+      url='http://localhost:5000/edit/'+userId;
     }
     const response=await fetch(url,{
       method:method,

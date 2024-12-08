@@ -5,7 +5,7 @@ import { jwtDecode } from "jwt-decode";
 export default function EditUserPage(){
     const userData=useLoaderData();
     return(
-        <Signup title="Edit user" method="patch" userData={userData}   />
+        <Signup title="Edit user" button="Update" method="patch" userData={userData}   />
     );
 }
 
@@ -22,9 +22,9 @@ export async function loader({request,params}){
       throw new Error("No valid token found.");
     }
   
-    const userId = decodedToken?.sub; // Dobija `id` iz dekodiranog tokena
+    const userId = decodedToken?.id; // Dobija `id` iz dekodiranog tokena
     
-    const response = await fetch(`http://localhost:8080/user/${userId}`, {
+    const response = await fetch(`http://localhost:5000/user/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`, // Ako je potrebno, dodajte Authorization header
       }

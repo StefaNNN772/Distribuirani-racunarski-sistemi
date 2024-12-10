@@ -1,17 +1,20 @@
 import { Link, Form, redirect, useActionData, json } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-
 import Header from "./Header";
+
 export default function Signup({title,button,method,userData}) {
 
   const data = useActionData();
+ 
+
+ 
   
     return (
       <>
 
         <Header/>
         
-        <Form className="control" method={method}>
+        <Form className="control" method={method} >
         <h1>{title}</h1>
         <div className="control">
           <label htmlFor="email">Email</label>
@@ -81,8 +84,8 @@ export default function Signup({title,button,method,userData}) {
         {data?.error && <p style={{ color: "red" }}>{data.error}</p>} {/* Prikaz greške */}
   
         <p className="form-actions">
-          <Link to='/' className="button button-flat">Back</Link>
-          <button className="button">{button}</button>
+          <Link to={button==='Sign up' ? '/' : '/home'} className="button button-flat">Back</Link>
+          <button className="button" >{button}</button>
         </p>
       </Form>
       </>
@@ -149,5 +152,6 @@ export default function Signup({title,button,method,userData}) {
     //   return redirect('/signup')
     // }
 
-    return redirect('/');
+    return redirect(method === 'PATCH' ? '/home' : '/');
+
   }

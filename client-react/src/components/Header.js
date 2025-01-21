@@ -1,11 +1,11 @@
-import logoImg from '../pictures/btc.png';
+import logoImg from '../pictures/stock.jpg';
 
 
 export default function Header(){
     return(
         <header>
             <img src={logoImg}/>
-            <h1>Crypto Portfolio</h1>
+            <h1>Stocks Portfolio</h1>
         </header>
         );
 }

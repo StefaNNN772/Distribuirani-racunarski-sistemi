@@ -6,7 +6,10 @@ import LoginPage ,{action as loginAction}from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import StocksPage from "./pages/StocksPage";
 import NavBarRoot from "./pages/NavBarRoot";
-import EditUserPage from "./pages/EditUserPage";
+import EditUserPage ,{loader as editLoadData}from "./pages/EditUserPage";
+import AddStockPage,{action as addStockAction} from "./pages/AddStockPage";
+import ShowStocksPage,{loader as showLoader} from "./pages/ShowStocksPage";
+
 
 
 const router=createBrowserRouter([
@@ -18,10 +21,20 @@ const router=createBrowserRouter([
   },
   {path: '/',element:<NavBarRoot/>,
     children:[
-      {path:'home',element:<StocksPage/>},
-      {path:'edit/:editId',element:<EditUserPage/>,
+      {path:'home',element:<StocksPage/>,
+        
+      },
+      {path:'show',element:<ShowStocksPage/>,loader:showLoader},
+
+      
+      {path:'edit',element:<EditUserPage/>,
+        //path:'edit/:editId'
+        loader:editLoadData,
         action:manipulateFormAction
-      }
+      },
+      { path: "add-stock", 
+        element: <AddStockPage />,
+         action:addStockAction},
     ]
   }
   

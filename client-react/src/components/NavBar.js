@@ -1,6 +1,10 @@
 import { NavLink } from 'react-router-dom';
 import logoImg from '../pictures/btc.png';
+import { jwtDecode } from 'jwt-decode';
+
 export default function NavBar(){
+
+ 
     return(
       <header >
         <nav>
@@ -11,12 +15,21 @@ export default function NavBar(){
                     end>Home</NavLink>
                 </li>
                 <li>
-                    <NavLink to='edit'
+                    <NavLink  to='edit'
+                    //to={`edit/${userId}`}
                     className={({isActive})=> isActive ? 'active' : undefined}
                     end
                     >User Edit</NavLink>
                 </li>
-               
+               <li>
+                    <NavLink
+                    to="/add-stock"
+                    className={({isActive})=> isActive ? 'active' : undefined}
+                    end
+                    >
+                        Add Stock
+                    </NavLink>
+               </li>
             </ul>
         </nav>
       </header>

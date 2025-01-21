@@ -7,7 +7,7 @@ import SignUpPage from "./pages/SignUpPage";
 import StocksPage from "./pages/StocksPage";
 import NavBarRoot from "./pages/NavBarRoot";
 import EditUserPage ,{loader as editLoadData}from "./pages/EditUserPage";
-
+import AddStockPage ,{action as addStockAction} from "./pages/AddStockPage"; // Import AddStockPage
 
 const router=createBrowserRouter([
   
@@ -23,7 +23,8 @@ const router=createBrowserRouter([
         //path:'edit/:editId'
         loader:editLoadData,
         action:manipulateFormAction
-      }
+      },
+      { path: "add-stock", element: <AddStockPage />, action:addStockAction},
     ]
   }
   

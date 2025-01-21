@@ -31,7 +31,14 @@ export default function NavBar(){
                     end
                     >User Edit</NavLink>
                 </li>
-               
+               <li>
+                    <NavLink
+                    to="/add-stock"
+                    style={{ color: "white", textDecoration: "none", fontSize: "18px" }}
+                    >
+                        Add Stock
+                    </NavLink>
+               </li>
             </ul>
         </nav>
       </header>

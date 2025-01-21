@@ -188,5 +188,37 @@ def edit_user_route(id):
 #         print(f"Error retrieving users: {ex}")
 #         return jsonify({"Error": "Unable to fetch users"}), 500
 
+@app.route('/add-stock', methods=['POST'])
+def add_stock():
+    try:
+        # Extract data from the incoming JSON request using request.json["key"]
+        user_id = request.json["user_id"]
+        stock_name = request.json["stockName"]
+        transaction_type = request.json["transactionType"]
+        transaction_date = request.json["transactionDate"]
+        quantity = request.json["transactionQuantity"]
+        purchase_price = request.json["transactionValue"]
+
+
+        # Create a new Stock entry
+        new_stock = Stock(
+            user_id=user_id,
+            stock_name=stock_name,
+            quantity=quantity,
+            purchase_price=purchase_price,
+            transaction_date=datetime.datetime.strptime(transaction_date, '%Y-%m-%dT%H:%M') if transaction_date else None,
+            is_sold = False
+        )
+
+        # Add the new stock to the database
+        db.session.add(new_stock)
+        db.session.commit()
+
+        return jsonify({"message": "Stock added successfully"}), 201
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     app.run(debug = True)

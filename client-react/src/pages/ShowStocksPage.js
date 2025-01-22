@@ -11,8 +11,15 @@ export default function ShowStocksPage() {
 
 // Loader funkcija za preuzimanje podataka sa servera
 export async function loader() {
+  const token=localStorage.getItem('token');
+  if (!token) {
+    throw json({ message: "Pristup zabranjen. Token nije pronađen." }, { status: 401 });
+  }
   const response = await fetch("http://localhost:5000/get-stock", {
-    
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`, // Prosljeđivanje tokena kao Authorization header
+    },
   });
 
   if (!response.ok) {

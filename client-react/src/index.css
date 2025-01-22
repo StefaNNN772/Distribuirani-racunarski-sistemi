@@ -189,5 +189,71 @@ fieldset {
   text-decoration: underline;
 }
 
+/* Kontener za sve kartice */
+.stocks-container {
+  padding: 20px;
+  text-align: center;
+}
 
+/* Flexbox kontejner za raspored kartica */
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+/* Stil za svaku karticu */
+.stock-card {
+  background-color: #2d4242;  /* Tamna pozadina za karticu */
+  padding: 20px;
+  width: 250px;
+  border-radius: 15px;  /* Zaokruživanje uglova */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);  /* Senka oko kartice */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;  /* Efekat prilikom hovera */
+  text-align: left;
+  color: #d9e2f1;  /* Svetla boja teksta */
+  font-family: "Roboto Condensed", sans-serif;
+}
+
+.stock-card h2 {
+  font-size: 1.4em;
+  color: #83e6c0;  /* Svetlija boja za ime zalihe */
+  margin-bottom: 10px;
+}
+
+.stock-card time {
+  font-size: 1em;
+  color: #b4d6d2;  /* Siva boja za datum */
+}
+
+.stock-card .button {
+  background-color: #147b73;
+  color: #d9e2f1;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  text-align: center;
+  margin-top: 15px;
+}
+
+.stock-card .button:hover,
+.stock-card .button:focus {
+  background-color: #319890;
+}
+
+.stock-card:hover {
+  transform: translateY(-10px);  /* Pomera karticu na gore */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);  /* Jača senka pri hoveru */
+}
+
+/* Responzivni dizajn za manje ekrane */
+@media (max-width: 768px) {
+  .cards-container {
+    justify-content: space-around;
+  }
+
+  .stock-card {
+    width: 100%;  /* Kartice će zauzimati celu širinu na manjim ekranima */
+  }
+}
 

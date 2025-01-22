@@ -222,6 +222,28 @@ def add_stock():
         print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500
     
+@app.route('/get-stock', methods=['GET'])
+def get_stock():
+    print("GET /get-stock endpoint hit")  # Log za praćenje
+    try:
+        stocks = Stock.query.all()
+        stock_list = [
+            {
+                "id": stock.id,
+                "user_id": stock.user_id,
+                "stock_name": stock.stock_name,
+                "quantity": stock.quantity,
+                "purchase_price": stock.purchase_price,
+                "transaction_date": stock.transaction_date.strftime('%Y-%m-%dT%H:%M') if stock.transaction_date else None,
+                "is_sold": stock.is_sold,
+            }
+            for stock in stocks
+        ]
+        return jsonify(stock_list), 200
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": str(e)}), 500
+    
 
 
 if __name__ == "__main__":

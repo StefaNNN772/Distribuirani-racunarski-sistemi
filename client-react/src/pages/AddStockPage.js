@@ -15,6 +15,9 @@ export async function action({ request }) {
   const data = await request.formData();
   const token = localStorage.getItem("token"); // Uzima token iz LocalStorage
   const decodedToken = token ? jwtDecode(token) : null;
+  if (!decodedToken) {
+    throw new Error("Invalid or missing token");
+}
   const userId = decodedToken?.id;
   const authData = {
       user_id: userId,

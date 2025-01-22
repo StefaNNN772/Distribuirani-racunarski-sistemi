@@ -30,6 +30,13 @@ export default function NavBar(){
                         Add Stock
                     </NavLink>
                </li>
+               <li>
+                <NavLink
+                to="/show"
+                className={({isActive})=> isActive ? 'active' : undefined}
+                end
+                >Show Wallet</NavLink>
+               </li>
             </ul>
         </nav>
       </header>

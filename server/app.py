@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from config import ApplicationConfig
@@ -38,7 +38,6 @@ def send_mail_async(app, message):
             print("Mail successfully sent")
         except Exception as ex:
             print(f"Error: {ex}")
-
 
 #--------LOGIN-------- 
 def login_user(email, password):
@@ -169,6 +168,19 @@ def edit_user_route(id):
     else:
         return jsonify({"Error": "User with that email already exists"}), 409
 
+
+#--------HOME--------
+@app.route("/api/stocks", methods=['GET'])
+def get_stocks():
+    stocks = Stock.query.all()
+    return jsonify([
+        {
+            "ticker": s.id,
+            "name": s.stock_name,
+            "quantity": s.quantity
+        }
+        for s in stocks
+    ])
 # Provjera rada nad bazom
 # @app.route("/print-users", methods=["GET"])
 # def print_users():

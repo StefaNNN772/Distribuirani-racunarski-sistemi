@@ -7,6 +7,7 @@ import SignUpPage from "./pages/SignUpPage";
 import StocksPage from "./pages/StocksPage";
 import NavBarRoot from "./pages/NavBarRoot";
 import EditUserPage ,{loader as editLoadData}from "./pages/EditUserPage";
+import AddStock from "./components/AddStocks";
 
 
 const router=createBrowserRouter([
@@ -14,6 +15,9 @@ const router=createBrowserRouter([
   {path:'/',element:<LoginPage/>,
     action:loginAction},
   {path:'/signup',element:<SignUpPage/>,
+    action:manipulateFormAction
+  },
+  {path:'/addStock', element:<AddStock/>,
     action:manipulateFormAction
   },
   {path: '/',element:<NavBarRoot/>,

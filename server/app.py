@@ -12,6 +12,8 @@ from flask_mail import Mail, Message
 import threading
 import datetime
 import jwt
+import yfinance as yf
+import pandas as pd
 
 def get_uuid():
     return uuid4().hex
@@ -169,24 +171,113 @@ def edit_user_route(id):
     else:
         return jsonify({"Error": "User with that email already exists"}), 409
 
-# Provjera rada nad bazom
-# @app.route("/print-users", methods=["GET"])
-# def print_users():
-#     try:
-#         # Fetch all users
-#         users = User.query.all()
+#--------GET STOCKS--------
+@app.route("/stocks/<int:id>", methods=["GET"])
+def get_stocks(id):
+    user = User.query.filter_by(id=id).first()
+
+    if user is None:
+        return jsonify({"Error": "User with that id didnt found"}), 401
+    
+    stocks = Stock.query.filter_by(user_id = id).all()
+
+    stock_list = []
+    totalValue = 0.0
+    totalProfit = 0.0
+    for stock in stocks:
+        ticker = yf.Ticker(stock.stock_name.upper())
+
+        info = ticker.info
+
+        current_price = info.get('currentPrice', 'N/A')
+
+        current_price = float(current_price)
+        quantity = float(stock.quantity)
+
+        if stock.is_sold == False:
+            purchase_price = float(stock.purchase_price)
+            invested_amount = purchase_price * quantity
+            current_value = current_price * quantity
+            profit = current_value - invested_amount
+            totalValue -= invested_amount
+        else:
+            purchase_price = float(stock.sell_price)
+            invested_amount = purchase_price * quantity
+            current_value = current_price * quantity
+            profit = invested_amount - current_value
+            totalValue += invested_amount
         
-#         # Serialize user data
-#         user_list = [{"id": user.id, "email": user.email, "password": user.password} for user in users]
-        
-#         # Print to terminal for debugging
-#         for user in users:
-#             print(f"User ID: {user.id}, Email: {user.email}")
-        
-#         return jsonify(user_list), 200
-#     except Exception as ex:
-#         print(f"Error retrieving users: {ex}")
-#         return jsonify({"Error": "Unable to fetch users"}), 500
+        totalProfit += profit
+        stock_list.append({
+            'id': stock.id,
+            'stock_name': stock.stock_name,
+            'quantity': stock.quantity,
+            'purchase_price': purchase_price,
+            'transaction_date': stock.transaction_date.isoformat(),
+            'current_price': round(current_price, 2),
+            'profit': round(profit, 2),
+            'is_sold': stock.is_sold
+        })
+    
+    print(totalProfit)
+    print(totalValue)
+
+    return jsonify({
+        "stocks": stock_list,
+        "portfolioValue": round(totalValue, 2),
+        "totalProfit": round(totalProfit, 2)
+    }), 200
+
+#--------ADD STOCKS--------
+@app.route("/addStocks", methods=["POST"])
+def add_stocks():
+    try:
+        stock_name = request.json["stock_name"]
+        quantity = request.json["quantity"]
+        price = request.json["price"]
+        transaction_date = pd.to_datetime(request.json["transaction_date"])
+        print(transaction_date)
+        transaction_type = request.json["transaction_type"]
+        user_id = request.json["user_id"]
+    except Exception as ex:
+        print(f"Error: {ex}")
+        return jsonify({"Error": f"Server couldnt get data: {ex}"}), 400
+    
+    ticker = yf.Ticker(stock_name.upper())
+
+    info = ticker.info
+
+    if not info.get('longName') and not info.get('shortName'):
+            return jsonify({"Error": f"Symbol '{stock_name}' not found in Yahoo Finance"}), 400
+    
+    if info.get('quoteType') not in ['EQUITY', 'ETF', 'MUTUALFUND', 'INDEX', 'CRYPTOCURRENCY']:
+            return jsonify({"Error": f"'{stock_name}' is not a valid financial instrument"}), 400
+    
+    if transaction_type == "buy":
+        stock = Stock(user_id = user_id, stock_name = stock_name, quantity = quantity, purchase_price = price, 
+                    transaction_date = transaction_date, is_sold = False)
+        db.session.add(stock)
+        db.session.commit()
+    else:
+        stock = Stock(user_id = user_id, stock_name = stock_name, quantity = quantity, purchase_price = 0, 
+                    transaction_date = transaction_date, is_sold = True, sell_price = price)
+        db.session.add(stock)
+        db.session.commit()
+
+    return jsonify({"Message": "Successfully added stock transaction"}), 200
+
+#--------DELETE STOCKS--------
+@app.route("/deleteStocks/<int:id>", methods=["DELETE"])
+def delete_stocks(id):
+    stock = Stock.query.filter_by(id = id).first()
+
+    if stock is None:
+        return jsonify({"Error": "Stock with that id didnt found"}), 401
+    
+    db.session.delete(stock)
+    db.session.commit()
+
+    return jsonify({"Message": "Successfully deleted stock transaction"}), 200
 
 if __name__ == "__main__":
     app.run(debug = True)

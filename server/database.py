@@ -20,6 +20,7 @@ class User(db.Model):
     country = db.Column(db.String(100), nullable=False)
     phone = db.Column(db.Integer, nullable=False)
     password = db.Column(db.String(255), nullable=False)
+    balance = db.Column(db.Numeric(20, 2), nullable=False, default=0.0)
 
 class Stock(db.Model):
     __tablename__ = 'stocks'
@@ -28,6 +29,7 @@ class Stock(db.Model):
     stock_name = db.Column(db.String(50), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     purchase_price = db.Column(db.Numeric(10, 2), nullable=False)
+    sell_price = db.Column(db.Numeric(10, 2), nullable=True)
     transaction_date = db.Column(db.DateTime, default=func.now())
     is_sold = db.Column(db.Boolean, default = False)
 

@@ -43,6 +43,15 @@ header h1 {
   color: #2f4444;
 }
 
+a {
+  font-family: "Quicksand", sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 1rem 0;
+  letter-spacing: 0.2rem;
+  color: #2f4444;
+}
+
 form {
   width: 90%;
   max-width: 40rem;
@@ -189,5 +198,262 @@ fieldset {
   text-decoration: underline;
 }
 
+.portfolio-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
 
+.portfolio-summary {
+  margin-bottom: 2rem;
+}
 
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.summary-card {
+  background: linear-gradient(180deg, #253c3c, #1d4949);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.summary-card h3 {
+  margin: 0 0 0.5rem 0;
+  color: #9bafaf;
+  font-size: 1rem;
+  font-weight: normal;
+}
+
+.summary-card .value {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #d9e2f1;
+}
+
+.summary-card .value.profit {
+  color: #4caf50;
+}
+
+.summary-card .value.loss {
+  color: #f44336;
+}
+
+.search-filter {
+  margin-bottom: 2rem;
+}
+
+.search-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: end;
+}
+
+.search-controls .control {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.portfolio-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.stocks-list h2 {
+  color: #83e6c0;
+  margin-bottom: 1rem;
+}
+
+.stocks-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.stock-card {
+  background: linear-gradient(180deg, #253c3c, #1d4949);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.stock-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.stock-header h3 {
+  margin: 0;
+  color: #83e6c0;
+  font-size: 1.5rem;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: #f44336;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-btn:hover {
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stock-details {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid rgba(117, 138, 138, 0.2);
+}
+
+.detail-row span:first-child {
+  color: #9bafaf;
+  font-weight: 500;
+}
+
+.detail-row span:last-child {
+  color: #d9e2f1;
+  font-weight: bold;
+}
+
+.profit-loss.profit span:last-child {
+  color: #4caf50;
+}
+
+.profit-loss.loss span:last-child {
+  color: #f44336;
+}
+
+.charts-container {
+  display: grid;
+  gap: 2rem;
+}
+
+.chart-section {
+  background: linear-gradient(180deg, #253c3c, #1d4949);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.chart-section h3 {
+  margin: 0 0 1rem 0;
+  color: #83e6c0;
+  text-align: center;
+}
+
+.no-stocks {
+  text-align: center;
+  color: #9bafaf;
+  font-style: italic;
+  padding: 2rem;
+  background: linear-gradient(180deg, #253c3c, #1d4949);
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+nav {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.list {
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .portfolio-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .search-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+:root {
+  --color-primary-400: #9cbaba;
+  --color-primary-800: #147b73;
+}
+
+.logout-btn {
+  background: none !important;
+  border: 1px solid #f44336 !important;
+  color: #f44336 !important;
+  margin-left: auto;
+}
+
+.logout-btn:hover {
+  background-color: #f44336 !important;
+  color: white !important;
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.no-arrows::-webkit-outer-spin-button,
+.no-arrows::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.no-arrows[type=number] {
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="time"] {
+  display: block;
+  width: 100%;
+  max-width: 15rem;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border-radius: 4px;
+  border: 1px solid #758a8a;
+  background-color: #869999;
+  color: #142020;
+}

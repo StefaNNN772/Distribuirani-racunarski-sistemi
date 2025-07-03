@@ -1,39 +1,55 @@
-import { NavLink } from 'react-router-dom';
-import logoImg from '../pictures/btc.png';
-import { jwtDecode } from 'jwt-decode';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { removeToken } from '../util/auth';
+import stockImage from '../pictures/stock.jpg'
 
-export default function NavBar(){
+export default function NavBar() {
+  const location = useLocation();
+  const navigate = useNavigate();
 
-   /* const token = localStorage.getItem("token"); // Uzima token iz LocalStorage
-    const decodedToken = token ? jwtDecode(token) : null; // Dekodira token
-  
-    // Dodajte debug ispis ovde:
-    console.log("Token from localStorage:", token);
-    console.log("Decoded Token:", decodedToken);
-  
-    const userId = decodedToken?.sub; // Dobija `id` iz dekodiranog tokena
-   */
-    // Još jedan debug ispis za `userId`:
-   // console.log("User ID:", userId);
-    return(
-      <header >
-        <nav>
-            <ul className='list'>
-                <li >
-                    <NavLink to='/home'
-                    className={({isActive})=> isActive ? 'active' : undefined}
-                    end>Home</NavLink>
-                </li>
-                <li>
-                    <NavLink  to='edit'
-                    //to={`edit/${userId}`}
-                    className={({isActive})=> isActive ? 'active' : undefined}
-                    end
-                    >User Edit</NavLink>
-                </li>
-               
-            </ul>
-        </nav>
-      </header>
-    );
+  const handleLogout = () => {
+    removeToken();
+    navigate('/');
+  };
+
+  return (
+    <header>
+      <div className="navbar-content">
+        <img 
+          src={stockImage} 
+          alt="Portfolio Logo" 
+          className="small-img"
+        />
+        <a href="/app/home">Portfolio Tracker</a>
+      </div>
+      
+      <nav>
+        <div className="list">
+          <Link 
+            to="/app/home" 
+            className={location.pathname === '/app/home' ? 'active' : ''}
+          >
+            Portfolio
+          </Link>
+          <Link 
+            to="/app/transaction" 
+            className={location.pathname === '/app/transaction' ? 'active' : ''}
+          >
+            Add Transaction
+          </Link>
+          <Link 
+            to="/app/edit" 
+            className={location.pathname === '/app/edit' ? 'active' : ''}
+          >
+            Edit Profile
+          </Link>
+          <button 
+            onClick={handleLogout} 
+            className="button button-flat logout-btn"
+          >
+            Logout
+          </button>
+        </div>
+      </nav>
+    </header>
+  );
 }

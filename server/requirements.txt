@@ -8,3 +8,9 @@ flask-cors
 Flask-JWT-Extended
 flask_mail
 Werkzeug
+yfinance
+pandas
+numpy
+requests
+lxml
+beautifulsoup4

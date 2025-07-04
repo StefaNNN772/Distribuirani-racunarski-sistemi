@@ -4,6 +4,7 @@ import StockCard from '../components/StockCard';
 import SearchFilter from '../components/SearchFilter';
 import PortfolioSummary from '../components/PortfolioSummary';
 import StockChart from '../components/StockChart';
+import StockPriceChart from '../components/StockPriceChart';
 import { jwtDecode } from "jwt-decode";
 
 export default function StocksPage() {
@@ -12,6 +13,7 @@ export default function StocksPage() {
   const [portfolioValue, setPortfolioValue] = useState(initialData.portfolioValue);
   const [totalProfit, setTotalProfit] = useState(initialData.totalProfit);
   const [filteredStocks, setFilteredStocks] = useState(initialData.stocks);
+  const [selectedStock, setSelectedStock] = useState(null);
 
   // Funkcija za fetch podataka
   const fetchStocksData = async () => {
@@ -49,8 +51,8 @@ export default function StocksPage() {
 
   // Periodic calling backend
   useEffect(() => {
-    // Every 10s
-    const interval = setInterval(fetchStocksData, 10000);
+    // Every 60s
+    const interval = setInterval(fetchStocksData, 60000);
 
     // Cleanup
     return () => clearInterval(interval);
@@ -72,6 +74,14 @@ export default function StocksPage() {
     setFilteredStocks(filtered);
   };
 
+  const handleStockClick = (stock) => {
+    setSelectedStock(stock);
+  };
+
+  const handleCloseChart = () => {
+    setSelectedStock(null);
+  };
+
   return (
     <div className="portfolio-container">
       <PortfolioSummary 
@@ -90,7 +100,11 @@ export default function StocksPage() {
           ) : (
             <div className="stocks-grid">
               {filteredStocks.map(stock => (
-                <StockCard key={stock.id} stock={stock} />
+                <StockCard 
+                  key={stock.id} 
+                  stock={stock} 
+                  onStockClick={handleStockClick}
+                />
               ))}
             </div>
           )}
@@ -102,6 +116,13 @@ export default function StocksPage() {
           </div>
         )}
       </div>
+      
+      {selectedStock && (
+        <StockPriceChart 
+          stock={selectedStock} 
+          onClose={handleCloseChart}
+        />
+      )}
     </div>
   );
 }

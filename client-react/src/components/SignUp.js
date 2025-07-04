@@ -98,8 +98,9 @@ export default function Signup({ title, button, method, userData }) {
           <label htmlFor="phone">Phone</label>
           <input 
             id="phone" 
-            type="tel" 
-            name="phone" 
+            type="number" 
+            name="phone"
+            min="0"
             required 
             defaultValue={userData?.phone || ""}
           />

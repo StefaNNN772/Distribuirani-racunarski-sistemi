@@ -10,10 +10,11 @@ from flask_cors import CORS
 from database import init_db, User, Stock, db
 from flask_mail import Mail, Message
 import threading
-import datetime
+from datetime import datetime, timedelta
 import jwt
 import yfinance as yf
 import pandas as pd
+import requests
 
 def get_uuid():
     return uuid4().hex
@@ -27,6 +28,8 @@ bcrypt = Bcrypt(app)
 init_db(app)
 
 cors = CORS(app, supports_credentials=True)
+
+price_cache = {}
 
 mail = Mail(app)
 
@@ -59,7 +62,7 @@ def login_user(email, password):
     
     access_token = jwt.encode({
         'id':user.id,
-        'exp':datetime.datetime.utcnow()+datetime.timedelta(minutes=15)
+        'exp':datetime.utcnow()+timedelta(minutes=15)
     },ApplicationConfig.JWT_SECRET_KEY, algorithm='HS256')
     return jsonify(access_token=access_token,user={"id":user.id,"email":user.email})
 
@@ -174,59 +177,156 @@ def edit_user_route(id):
 #--------GET STOCKS--------
 @app.route("/stocks/<int:id>", methods=["GET"])
 def get_stocks(id):
-    user = User.query.filter_by(id=id).first()
+    try:
+        user = User.query.filter_by(id=id).first()
+        if user is None:
+            return jsonify({"Error": "User with that id didnt found"}), 401
+        
+        stocks = Stock.query.filter_by(user_id = id).all()
+        
+        stock_list = []
+        totalValue = 0.0
+        totalProfit = 0.0
+        
+        for stock in stocks:
+            # Function with fallback method
+            #current_price = get_current_stock_price_with_cache(stock.stock_name.upper())
 
-    if user is None:
-        return jsonify({"Error": "User with that id didnt found"}), 401
+            ticker = yf.Ticker(stock.stock_name)
+            info = ticker.info
+
+            current_price = info.get('currentPrice', 'N/A')
+            
+            if current_price is None:
+                return jsonify({"Error": f"Symbol '{stock.stock_name}' not found in Yahoo Finance or couldnt server get data"}), 400
+
+            quantity = float(stock.quantity)
+
+            if stock.is_sold == False:
+                purchase_price = float(stock.purchase_price)
+                invested_amount = purchase_price * quantity
+                current_value = current_price * quantity
+                profit = current_value - invested_amount
+                totalValue -= current_value
+            else:
+                purchase_price = float(stock.sell_price)
+                invested_amount = purchase_price * quantity
+                current_value = current_price * quantity
+                profit = invested_amount - current_value
+                totalValue += invested_amount
+            
+            totalProfit += profit
+            stock_list.append({
+                'id': stock.id,
+                'stock_name': stock.stock_name,
+                'quantity': stock.quantity,
+                'purchase_price': purchase_price,
+                'transaction_date': stock.transaction_date.isoformat(),
+                'current_price': round(current_price, 2),
+                'profit': round(profit, 2),
+                'is_sold': stock.is_sold
+            })
+        
+        return jsonify({
+            "stocks": stock_list,
+            "portfolioValue": round(totalValue, 2),
+            "totalProfit": round(totalProfit, 2),
+            "last_updated": datetime.now().isoformat()
+        }), 200
+        
+    except Exception as ex:
+        print(f"Error fetching stocks: {ex}")
+        return jsonify({"Error": "Internal error"}), 500
+
+def get_cached_price(stock_name, max_age_minutes=1):
+    if stock_name not in price_cache:
+        return None
+        
+    cached_data = price_cache[stock_name]
+    cache_time = datetime.fromisoformat(cached_data['timestamp'])
+    age_minutes = (datetime.now() - cache_time).total_seconds() / 60
+
+    print(age_minutes, max_age_minutes)
     
-    stocks = Stock.query.filter_by(user_id = id).all()
+    if age_minutes < max_age_minutes:
+        print(f"Cache HIT for {stock_name}: ${cached_data['price']} (age: {age_minutes:.1f}min)")
+        return cached_data['price']
+    else:
+        print(f"Cache EXPIRED for {stock_name} (age: {age_minutes:.1f}min)")
+        return None
 
-    stock_list = []
-    totalValue = 0.0
-    totalProfit = 0.0
-    for stock in stocks:
-        ticker = yf.Ticker(stock.stock_name.upper())
+def cache_price(stock_name, price):
+    price_cache[stock_name] = {
+        'price': price,
+        'timestamp': datetime.now().isoformat(),
+    }
+    print(f"Cached price for {stock_name}: ${price}")
 
+def get_current_stock_price_with_cache(stock_name):
+    # Checking cache
+    cached_price = get_cached_price(stock_name, max_age_minutes=2)
+    if cached_price:
+        print("AAAAAAAAAAAAAAAAAAAAAAAA", cached_price)
+        return cached_price
+    
+    fresh_price = get_current_stock_price(stock_name)
+    print("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB", fresh_price)
+    
+    if fresh_price:
+        cache_price(stock_name, fresh_price)
+    
+    return fresh_price
+
+def get_current_stock_price(stock_name):
+    try:
+        ticker = yf.Ticker(stock_name)
         info = ticker.info
 
         current_price = info.get('currentPrice', 'N/A')
-
-        current_price = float(current_price)
-        quantity = float(stock.quantity)
-
-        if stock.is_sold == False:
-            purchase_price = float(stock.purchase_price)
-            invested_amount = purchase_price * quantity
-            current_value = current_price * quantity
-            profit = current_value - invested_amount
-            totalValue -= invested_amount
-        else:
-            purchase_price = float(stock.sell_price)
-            invested_amount = purchase_price * quantity
-            current_value = current_price * quantity
-            profit = invested_amount - current_value
-            totalValue += invested_amount
         
-        totalProfit += profit
-        stock_list.append({
-            'id': stock.id,
-            'stock_name': stock.stock_name,
-            'quantity': stock.quantity,
-            'purchase_price': purchase_price,
-            'transaction_date': stock.transaction_date.isoformat(),
-            'current_price': round(current_price, 2),
-            'profit': round(profit, 2),
-            'is_sold': stock.is_sold
-        })
-    
-    print(totalProfit)
-    print(totalValue)
+        if not info.get('longName') and not info.get('shortName'):
+            return None
+        
+        if info.get('quoteType') not in ['EQUITY', 'ETF', 'MUTUALFUND', 'INDEX', 'CRYPTOCURRENCY']:
+            return None
+        
+        return round(float(current_price), 2)      
+    except Exception as e:
+        print(f"Method 2 failed for {stock_name}: {e}")
+    return None
 
-    return jsonify({
-        "stocks": stock_list,
-        "portfolioValue": round(totalValue, 2),
-        "totalProfit": round(totalProfit, 2)
-    }), 200
+#--------GET STOCKS DATA FOR CHART--------
+@app.route("/stocks/history/<stock_name>/<period>", methods=["GET"])
+def get_stocks_data(stock_name, period):
+    try:
+        ticker = yf.Ticker(stock_name.upper())
+
+        history = ticker.history(period=period, interval='1d')
+
+        if history.empty:
+            return jsonify({"Error", "Couldnt get history data for that stock name"}), 404
+        
+        prices = []
+        for date, row in history.iterrows():
+            prices.append({
+                'date': date.strftime('%Y-%m-%d'),
+                'price': round(float(row['Close']), 2),
+                'open': round(float(row['Open']), 2),
+                'high': round(float(row['High']),2 ),
+                'low': round(float(row['Low']),2 ),
+                'volume': int(row['Volume'])
+            })
+        
+        prices.sort(key=lambda x: x['date'])
+
+        return jsonify({
+            'symbol': stock_name,
+            'period': period,
+            'prices': prices
+        }), 200
+    except Exception as ex:
+        print(f"Error fetching stock history: {ex}")
+        return jsonify({"Error", "Internal error"}), 500
 
 #--------ADD STOCKS--------
 @app.route("/addStocks", methods=["POST"])

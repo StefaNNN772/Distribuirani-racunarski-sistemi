@@ -99,7 +99,6 @@ export async function action({ request }) {
     const decodedToken = jwtDecode(token);
     const userId = decodedToken?.id;
 
-    // Kombinuj datum i vreme u jedan timestamp
     const transactionDate = data.get('transaction_date');
     const transactionTime = data.get('transaction_time');
     const combinedDateTime = `${transactionDate}T${transactionTime}:00.000Z`;
@@ -108,12 +107,10 @@ export async function action({ request }) {
       stock_name: data.get('stock_name').toUpperCase(),
       quantity: parseInt(data.get('quantity')),
       price: parseFloat(data.get('price')),
-      transaction_date: combinedDateTime, // Šalje kombinovani datum i vreme
+      transaction_date: combinedDateTime,
       transaction_type: data.get('transaction_type'),
       user_id: userId
     };
-
-    console.log('Sending transaction data:', transactionData); // Za debug
 
     const response = await fetch('http://localhost:5000/addStocks', {
       method: 'POST',

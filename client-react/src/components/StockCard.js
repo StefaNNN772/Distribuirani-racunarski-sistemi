@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function StockCard({ stock }) {
+export default function StockCard({ stock, onStockClick }) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
@@ -28,13 +28,21 @@ export default function StockCard({ stock }) {
     }
   };
 
+  const handleCardClick = (e) => {
+    // Cant click on delete
+    if (e.target.closest('.delete-btn')) {
+      return;
+    }
+    onStockClick(stock);
+  };
+
   const currentValue = stock.quantity * stock.current_price;
   const purchaseValue = stock.quantity * stock.purchase_price;
   const profitLoss = stock.is_sold ? purchaseValue - currentValue : currentValue - purchaseValue;
   const profitPercentage = ((profitLoss / purchaseValue) * 100).toFixed(2);
 
   return (
-    <div className="stock-card">
+    <div className="stock-card clickable" onClick={handleCardClick}>
       <div className="stock-header">
         <h3>{stock.stock_name}</h3>
         <button 
@@ -79,6 +87,10 @@ export default function StockCard({ stock }) {
           <span>Date:</span>
           <span>{new Date(stock.transaction_date).toLocaleDateString()}</span>
         </div>
+      </div>
+      
+      <div className="click-hint">
+        <small>Click to view 30-day price chart</small>
       </div>
     </div>
   );

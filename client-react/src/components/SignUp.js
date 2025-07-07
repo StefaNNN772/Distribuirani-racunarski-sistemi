@@ -137,7 +137,8 @@ export async function action({ request, params }) {
     phone: data.get('phone'),
   };
 
-  let url = 'http://localhost:5000/signup';
+  const API_URL = process.env.REACT_APP_API_URL;
+  let url = `${API_URL}/signup`;
   let headers = {
     'Content-Type': 'application/json',
   };
@@ -153,7 +154,7 @@ export async function action({ request, params }) {
     console.log(decodedToken);
 
     const userId = decodedToken?.id;
-    url = `http://localhost:5000/edit/${userId}`;
+    url = `${API_URL}/edit/${userId}`;
     headers.Authorization = `Bearer ${token}`;
   }
 

@@ -11,7 +11,8 @@ export default function StockCard({ stock, onStockClick }) {
     setIsDeleting(true);
     
     try {
-      const response = await fetch(`http://localhost:5000/deleteStocks/${stock.id}`, {
+      const API_URL = process.env.REACT_APP_API_URL;
+      const response = await fetch(`${API_URL}/deleteStocks/${stock.id}`, {
         method: 'DELETE',
       });
 

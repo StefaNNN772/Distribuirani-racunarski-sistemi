@@ -112,7 +112,8 @@ export async function action({ request }) {
       user_id: userId
     };
 
-    const response = await fetch('http://localhost:5000/addStocks', {
+    const API_URL = process.env.REACT_APP_API_URL;
+    const response = await fetch(`${API_URL}/addStocks`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

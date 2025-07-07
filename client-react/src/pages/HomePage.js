@@ -25,10 +25,11 @@ export default function StocksPage() {
     }
 
     try {
+      const API_URL = process.env.REACT_APP_API_URL;
       const decodedToken = jwtDecode(token);
       const userId = decodedToken?.id;
       
-      const response = await fetch(`http://localhost:5000/stocks/${userId}`, {
+      const response = await fetch(`${API_URL}/stocks/${userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
@@ -137,8 +138,9 @@ export async function loader() {
   try {
     const decodedToken = jwtDecode(token);
     const userId = decodedToken?.id;
+    const API_URL = process.env.REACT_APP_API_URL;
     
-    const response = await fetch(`http://localhost:5000/stocks/${userId}`, {
+    const response = await fetch(`${API_URL}/stocks/${userId}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }

@@ -208,7 +208,7 @@ def get_stocks(id):
                 invested_amount = purchase_price * quantity
                 current_value = current_price * quantity
                 profit = current_value - invested_amount
-                totalValue -= current_value
+                totalValue += current_value
             else:
                 purchase_price = float(stock.sell_price)
                 invested_amount = purchase_price * quantity

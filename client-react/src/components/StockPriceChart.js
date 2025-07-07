@@ -33,7 +33,7 @@ export default function StockPriceChart({ stock, onClose }) {
       const API_URL = process.env.REACT_APP_API_URL;
       
       const response = await fetch(
-        `${API_URL}/history/${encodeURIComponent(stock.stock_name)}/1mo`
+        `${API_URL}/stocks/history/${encodeURIComponent(stock.stock_name)}/1mo`
       );
       
       if (!response.ok) {

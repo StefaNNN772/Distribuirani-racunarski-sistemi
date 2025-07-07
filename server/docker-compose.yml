@@ -22,6 +22,10 @@ services:
       - db
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/portfolio
+      JWT_SECRET_KEY: slbodvmvs
+      MAIL_USERNAME: schneiderelectricinternship@gmail.com
+      MAIL_PASSWORD: aeoo vuqm gifg pnsw
+      MAIL_DEFAULT_SENDER: schneiderelectricinternship@gmail.com
 
 volumes:
   db_data:

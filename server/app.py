@@ -15,6 +15,7 @@ import jwt
 import yfinance as yf
 import pandas as pd
 import requests
+import os
 
 def get_uuid():
     return uuid4().hex
@@ -380,4 +381,5 @@ def delete_stocks(id):
     return jsonify({"Message": "Successfully deleted stock transaction"}), 200
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
     app.run(debug = True)

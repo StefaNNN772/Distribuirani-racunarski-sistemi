@@ -153,6 +153,7 @@ export async function action({ request, params }) {
 
     console.log(decodedToken);
 
+    const API_URL = process.env.REACT_APP_API_URL;
     const userId = decodedToken?.id;
     url = `${API_URL}/edit/${userId}`;
     headers.Authorization = `Bearer ${token}`;

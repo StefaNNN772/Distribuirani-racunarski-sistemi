@@ -25,7 +25,7 @@ export async function loader({request,params}){
     const userId = decodedToken?.id; // Dobija `id` iz dekodiranog tokena
     
     const API_URL = process.env.REACT_APP_API_URL;
-    const response = await fetch(`${API_URL}/${userId}`, {
+    const response = await fetch(`${API_URL}/user/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`, // Ako je potrebno, dodajte Authorization header
       }

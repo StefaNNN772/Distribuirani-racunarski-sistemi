@@ -17,7 +17,8 @@ export default function StockCard({ stock, onStockClick }) {
       });
 
       if (response.ok) {
-        window.location.reload(); // Refresh the page to show updated data
+        // Don't reload the page - WebSocket will handle the update
+        console.log('Transaction deleted successfully');
       } else {
         throw new Error('Failed to delete transaction');
       }
@@ -30,7 +31,7 @@ export default function StockCard({ stock, onStockClick }) {
   };
 
   const handleCardClick = (e) => {
-    // Cant click on delete
+    // Can't click on delete button
     if (e.target.closest('.delete-btn')) {
       return;
     }

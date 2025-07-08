@@ -1,8 +1,17 @@
-import { Form, Link, redirect, useActionData } from 'react-router-dom';
+import { Form, Link, redirect, useActionData, useNavigate } from 'react-router-dom';
 import { jwtDecode } from "jwt-decode";
+import { useEffect } from 'react';
 
 export default function TransactionPage() {
   const data = useActionData();
+  const navigate = useNavigate();
+
+  // Navigate on successful submission
+  useEffect(() => {
+    if (data?.success) {
+      navigate('/app/home');
+    }
+  }, [data, navigate]);
 
   return (
     <Form className="control" method="post">
@@ -78,6 +87,7 @@ export default function TransactionPage() {
       </div>
 
       {data?.error && <p style={{ color: "red" }}>{data.error}</p>}
+      {data?.success && <p style={{ color: "green" }}>Transaction added successfully!</p>}
 
       <p className="form-actions">
         <Link to="/app/home" className="button button-flat">Cancel</Link>
@@ -124,10 +134,11 @@ export async function action({ request }) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      return { error: errorData.message || 'Failed to add transaction' };
+      return { error: errorData.Error || 'Failed to add transaction' };
     }
 
-    return redirect('/app/home');
+    // Return success - WebSocket will handle the real-time update
+    return { success: true };
   } catch (error) {
     console.error('Error adding transaction:', error);
     return { error: 'Network error. Please try again.' };

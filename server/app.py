@@ -9,6 +9,7 @@ from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from database import init_db, User, Stock, db
 from flask_mail import Mail, Message
+from flask_socketio import SocketIO, emit, join_room, leave_room
 import threading
 from datetime import datetime, timedelta
 import jwt
@@ -16,6 +17,7 @@ import yfinance as yf
 import pandas as pd
 import requests
 import os
+import time
 
 def get_uuid():
     return uuid4().hex
@@ -29,8 +31,10 @@ bcrypt = Bcrypt(app)
 init_db(app)
 
 cors = CORS(app, supports_credentials=True)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 price_cache = {}
+connected_users = {}  # Track connected users and their rooms
 
 mail = Mail(app)
 
@@ -45,6 +49,96 @@ def send_mail_async(app, message):
         except Exception as ex:
             print(f"Error: {ex}")
 
+# WebSocket Events
+@socketio.on('connect')
+def on_connect():
+    print(f"Client connected: {request.sid}")
+
+@socketio.on('disconnect')
+def on_disconnect():
+    print(f"Client disconnected: {request.sid}")
+    for user_id, sessions in list(connected_users.items()):
+        if request.sid in sessions:
+            sessions.remove(request.sid)
+            if not sessions:
+                del connected_users[user_id]
+            break
+
+@socketio.on('join_user_room')
+def on_join_user_room(data):
+    user_id = data.get('user_id')
+    if user_id:
+        room = f"user_{user_id}"
+        join_room(room)
+        
+        # Track connected users
+        if user_id not in connected_users:
+            connected_users[user_id] = []
+        connected_users[user_id].append(request.sid)
+        
+        print(f"User {user_id} joined room {room}")
+        emit('joined_room', {'room': room})
+
+@socketio.on('leave_user_room')
+def on_leave_user_room(data):
+    user_id = data.get('user_id')
+    if user_id:
+        room = f"user_{user_id}"
+        leave_room(room)
+        print(f"User {user_id} left room {room}")
+
+def broadcast_stock_update(user_id, event_type, data):
+    room = f"user_{user_id}"
+    socketio.emit(event_type, data, room=room)
+    print(f"Broadcasted {event_type} to room {room}")
+
+def broadcast_price_updates():
+    while True:
+        try:
+            time.sleep(120)  # Update every 2 minutes
+            
+            if not connected_users:
+                continue
+                
+            # Get all unique stock symbols from all users
+            all_stocks = set()
+            user_stocks = {}
+            
+            for user_id in connected_users.keys():
+                user = User.query.filter_by(id=user_id).first()
+                if user:
+                    stocks = Stock.query.filter_by(user_id=user_id).all()
+                    user_stock_symbols = [stock.stock_name.upper() for stock in stocks]
+                    user_stocks[user_id] = user_stock_symbols
+                    all_stocks.update(user_stock_symbols)
+            
+            # Fetch current prices for all stocks
+            updated_prices = {}
+            for symbol in all_stocks:
+                try:
+                    current_price = get_current_stock_price(symbol)
+                    if current_price:
+                        updated_prices[symbol] = current_price
+                        cache_price(symbol, current_price)
+                except Exception as e:
+                    print(f"Error updating price for {symbol}: {e}")
+            
+            # Broadcast updates to each user's room
+            for user_id, symbols in user_stocks.items():
+                user_updates = {symbol: updated_prices.get(symbol) for symbol in symbols if symbol in updated_prices}
+                if user_updates:
+                    room = f"user_{user_id}"
+                    socketio.emit('prices_updated', {
+                        'prices': user_updates,
+                        'timestamp': datetime.now().isoformat()
+                    }, room=room)
+                    
+        except Exception as e:
+            print(f"Error in price update broadcast: {e}")
+
+# Start price update thread
+price_update_thread = threading.Thread(target=broadcast_price_updates, daemon=True)
+price_update_thread.start()
 
 #--------LOGIN-------- 
 def login_user(email, password):
@@ -174,6 +268,64 @@ def edit_user_route(id):
         return jsonify({"Message": "Successfully updated user"}), 200
     else:
         return jsonify({"Error": "User with that email already exists"}), 409
+
+def get_stocks_data_internal(user_id):
+    try:
+        user = User.query.filter_by(id=user_id).first()
+        if user is None:
+            return None
+        
+        stocks = Stock.query.filter_by(user_id=user_id).all()
+        
+        stock_list = []
+        totalValue = 0.0
+        totalProfit = 0.0
+        
+        for stock in stocks:
+            ticker = yf.Ticker(stock.stock_name)
+            info = ticker.info
+            current_price = info.get('currentPrice', 'N/A')
+            
+            if current_price is None:
+                continue
+
+            quantity = float(stock.quantity)
+
+            if stock.is_sold == False:
+                purchase_price = float(stock.purchase_price)
+                invested_amount = purchase_price * quantity
+                current_value = current_price * quantity
+                profit = current_value - invested_amount
+                totalValue += current_value
+            else:
+                purchase_price = float(stock.sell_price)
+                invested_amount = purchase_price * quantity
+                current_value = current_price * quantity
+                profit = invested_amount - current_value
+                totalValue += invested_amount
+            
+            totalProfit += profit
+            stock_list.append({
+                'id': stock.id,
+                'stock_name': stock.stock_name,
+                'quantity': stock.quantity,
+                'purchase_price': purchase_price,
+                'transaction_date': stock.transaction_date.isoformat(),
+                'current_price': round(current_price, 2),
+                'profit': round(profit, 2),
+                'is_sold': stock.is_sold
+            })
+        
+        return {
+            "stocks": stock_list,
+            "portfolioValue": round(totalValue, 2),
+            "totalProfit": round(totalProfit, 2),
+            "last_updated": datetime.now().isoformat()
+        }
+        
+    except Exception as ex:
+        print(f"Error fetching stocks internally: {ex}")
+        return None
 
 #--------GET STOCKS--------
 @app.route("/stocks/<int:id>", methods=["GET"])
@@ -365,6 +517,17 @@ def add_stocks():
         db.session.add(stock)
         db.session.commit()
 
+    # Broadcast the new stock addition
+    try:
+        response_data = get_stocks_data_internal(user_id)
+        if response_data:
+            broadcast_stock_update(user_id, 'stock_added', {
+                'message': 'New transaction added',
+                'portfolio_data': response_data
+            })
+    except Exception as e:
+        print(f"Error broadcasting stock addition: {e}")
+
     return jsonify({"Message": "Successfully added stock transaction"}), 200
 
 #--------DELETE STOCKS--------
@@ -375,11 +538,24 @@ def delete_stocks(id):
     if stock is None:
         return jsonify({"Error": "Stock with that id didnt found"}), 401
     
+    user_id = stock.user_id
+    
     db.session.delete(stock)
     db.session.commit()
+
+    # Broadcast the stock deletion
+    try:
+        response_data = get_stocks_data_internal(user_id)
+        broadcast_stock_update(user_id, 'stock_deleted', {
+            'message': 'Transaction deleted',
+            'deleted_stock_id': id,
+            'portfolio_data': response_data
+        })
+    except Exception as e:
+        print(f"Error broadcasting stock deletion: {e}")
 
     return jsonify({"Message": "Successfully deleted stock transaction"}), 200
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    socketio.run(app, host="0.0.0.0", port=port, debug=True)

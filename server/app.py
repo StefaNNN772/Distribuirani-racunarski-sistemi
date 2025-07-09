@@ -12,12 +12,14 @@ from flask_mail import Mail, Message
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import threading
 from datetime import datetime, timedelta
+from datetime import time as time_1
 import jwt
 import yfinance as yf
 import pandas as pd
 import requests
 import os
 import time
+import pytz
 
 def get_uuid():
     return uuid4().hex
@@ -95,7 +97,7 @@ def broadcast_stock_update(user_id, event_type, data):
 def broadcast_price_updates():
     while True:
         try:
-            time.sleep(120)  # Update every 2 minutes
+            time.sleep(60)  # Update every 2 minutes
             
             if not connected_users:
                 continue
@@ -342,13 +344,39 @@ def get_stocks(id):
         totalProfit = 0.0
         
         for stock in stocks:
-            # Function with fallback method
-            #current_price = get_current_stock_price_with_cache(stock.stock_name.upper())
-
             ticker = yf.Ticker(stock.stock_name)
             info = ticker.info
 
-            current_price = info.get('currentPrice', 'N/A')
+            edt_tz = pytz.timezone('US/Eastern')
+            current_time_edt = datetime.now(edt_tz)
+            current_time_only = current_time_edt.time()
+            
+            # (EDT - Eastern Daylight Time)
+            market_open = time_1(9, 30)      # 9:30 AM EDT
+            market_close = time_1(16, 0)     # 4:00 PM EDT (16:00)
+            pre_market_start = time_1(4, 0)  # 4:00 AM EDT
+            after_market_end = time_1(20, 0) # 8:00 PM EDT
+                
+            if pre_market_start <= current_time_only < market_open:
+                price = info.get('preMarketPrice')
+                    
+            elif market_open <= current_time_only < market_close:
+                price = info.get('currentPrice')
+                
+            elif market_close <= current_time_only < after_market_end:
+                price = info.get('postMarketPrice')
+                    
+            else:
+                price = info.get('regularMarketPrice')
+
+
+            # Function with fallback method
+            #current_price = get_current_stock_price_with_cache(stock.stock_name.upper())
+
+            # ticker = yf.Ticker(stock.stock_name)
+            # info = ticker.info
+
+            current_price = price
             
             if current_price is None:
                 return jsonify({"Error": f"Symbol '{stock.stock_name}' not found in Yahoo Finance or couldnt server get data"}), 400

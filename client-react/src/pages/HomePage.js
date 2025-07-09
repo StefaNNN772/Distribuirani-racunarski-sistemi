@@ -167,7 +167,7 @@ export default function StocksPage() {
     websocketService.on('connection_error', handleConnectionError);
 
     // Fallback polling (less frequent since we have WebSocket)
-    const fallbackInterval = setInterval(fetchStocksData, 60000);
+    const fallbackInterval = setInterval(fetchStocksData, 30000);
 
     // Cleanup
     return () => {

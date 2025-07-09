@@ -95,48 +95,49 @@ def broadcast_stock_update(user_id, event_type, data):
     print(f"Broadcasted {event_type} to room {room}")
 
 def broadcast_price_updates():
-    while True:
-        try:
-            time.sleep(60)  # Update every 2 minutes
-            
-            if not connected_users:
-                continue
+    with app.app_context():
+        while True:
+            try:
+                time.sleep(30)  # Update every 2 minutes
                 
-            # Get all unique stock symbols from all users
-            all_stocks = set()
-            user_stocks = {}
-            
-            for user_id in connected_users.keys():
-                user = User.query.filter_by(id=user_id).first()
-                if user:
-                    stocks = Stock.query.filter_by(user_id=user_id).all()
-                    user_stock_symbols = [stock.stock_name.upper() for stock in stocks]
-                    user_stocks[user_id] = user_stock_symbols
-                    all_stocks.update(user_stock_symbols)
-            
-            # Fetch current prices for all stocks
-            updated_prices = {}
-            for symbol in all_stocks:
-                try:
-                    current_price = get_current_stock_price(symbol)
-                    if current_price:
-                        updated_prices[symbol] = current_price
-                        cache_price(symbol, current_price)
-                except Exception as e:
-                    print(f"Error updating price for {symbol}: {e}")
-            
-            # Broadcast updates to each user's room
-            for user_id, symbols in user_stocks.items():
-                user_updates = {symbol: updated_prices.get(symbol) for symbol in symbols if symbol in updated_prices}
-                if user_updates:
-                    room = f"user_{user_id}"
-                    socketio.emit('prices_updated', {
-                        'prices': user_updates,
-                        'timestamp': datetime.now().isoformat()
-                    }, room=room)
+                if not connected_users:
+                    continue
                     
-        except Exception as e:
-            print(f"Error in price update broadcast: {e}")
+                # Get all unique stock symbols from all users
+                all_stocks = set()
+                user_stocks = {}
+                
+                for user_id in connected_users.keys():
+                    user = User.query.filter_by(id=user_id).first()
+                    if user:
+                        stocks = Stock.query.filter_by(user_id=user_id).all()
+                        user_stock_symbols = [stock.stock_name.upper() for stock in stocks]
+                        user_stocks[user_id] = user_stock_symbols
+                        all_stocks.update(user_stock_symbols)
+                
+                # Fetch current prices for all stocks
+                updated_prices = {}
+                for symbol in all_stocks:
+                    try:
+                        current_price = get_current_stock_price(symbol)
+                        if current_price:
+                            updated_prices[symbol] = current_price
+                            cache_price(symbol, current_price)
+                    except Exception as e:
+                        print(f"Error updating price for {symbol}: {e}")
+                
+                # Broadcast updates to each user's room
+                for user_id, symbols in user_stocks.items():
+                    user_updates = {symbol: updated_prices.get(symbol) for symbol in symbols if symbol in updated_prices}
+                    if user_updates:
+                        room = f"user_{user_id}"
+                        socketio.emit('prices_updated', {
+                            'prices': user_updates,
+                            'timestamp': datetime.now().isoformat()
+                        }, room=room)
+                        
+            except Exception as e:
+                print(f"Error in price update broadcast: {e}")
 
 # Start price update thread
 price_update_thread = threading.Thread(target=broadcast_price_updates, daemon=True)
